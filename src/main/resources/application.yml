@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: demoS3
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+cloud:
+  aws:
+    stack-name: localstack
+    region:
+      static: us-east-1
+    credentials:
+      access-key: test
+      secret-key: test
+    s3:
+      endpoint: http://localstack:4566
+
+aws:
+  s3:
+    bucket: my-bucket
+

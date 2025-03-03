@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>S3 File Manager</title>
+</head>
+<body>
+<h1>File Upload</h1>
+<form id="uploadForm">
+    <input type="file" id="fileInput">
+    <button type="submit">Upload</button>
+</form>
+
+<h2>Files in S3:</h2>
+<ul id="fileList"></ul>
+
+<script>
+    // Загрузка файла
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const file = document.getElementById('fileInput').files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await fetch('/files/upload', {
+                method: 'POST',
+                body: formData
+            });
+            alert(await response.text());
+            loadFiles();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+    // Загрузка списка файлов
+    async function loadFiles() {
+        const response = await fetch('/files');
+        const files = await response.json();
+        const list = document.getElementById('fileList');
+        list.innerHTML = files.map(file =>
+            `<li><a href="/files/download/${file}" target="_blank">${file}</a></li>`
+        ).join('');
+    }
+
+    // Первоначальная загрузка списка
+    loadFiles();
+</script>
+</body>
+</html>
