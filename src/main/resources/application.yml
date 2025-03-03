@@ -15,7 +15,7 @@ cloud:
       access-key: test
       secret-key: test
     s3:
-      endpoint: http://localstack:4566
+      endpoint: http://localhost:4566
 
 aws:
   s3:

@@ -1,10 +1,7 @@
 package by.alex.demos3.service;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +37,7 @@ public class S3Service {
         }
     }
 
-    public void uploadFile(MultipartFile file) throws IOException {
-        String fileName = file.getOriginalFilename();
+    public void uploadFile(MultipartFile file, String fileName) throws IOException {
         log.debug("Attempting to upload file: {}", fileName);
         if (fileName != null) {
             ObjectMetadata metadata = new ObjectMetadata();
@@ -53,7 +49,6 @@ public class S3Service {
         }
     }
 
-
     public byte[] downloadFile(String fileName) throws IOException {
         S3Object s3Object = amazonS3.getObject(bucketName, fileName);
         try (S3ObjectInputStream inputStream = s3Object.getObjectContent()) {
@@ -64,9 +59,14 @@ public class S3Service {
 
     public List<String> listFiles() {
         List<String> files = amazonS3.listObjectsV2(bucketName).getObjectSummaries().stream()
-                .map(s3ObjectSummary -> s3ObjectSummary.getKey())
+                .map(S3ObjectSummary::getKey)
                 .collect(Collectors.toList());
         log.info("Files listed: {}", files.size());
         return files;
+    }
+
+    public void deleteFile(String fileName) {
+        amazonS3.deleteObject(bucketName, fileName);
+        log.info("File deleted: {}", fileName);
     }
 }

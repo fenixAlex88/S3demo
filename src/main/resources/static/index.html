@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <title>S3 File Manager</title>
 </head>
@@ -27,7 +27,7 @@
                 body: formData
             });
             alert(await response.text());
-            loadFiles();
+            await loadFiles();
         } catch (error) {
             console.error('Error:', error);
         }
@@ -39,8 +39,24 @@
         const files = await response.json();
         const list = document.getElementById('fileList');
         list.innerHTML = files.map(file =>
-            `<li><a href="/files/download/${file}" target="_blank">${file}</a></li>`
+            `<li>
+                <a href="/files/download/${file}" target="_blank">${file}</a>
+                <button onclick="deleteFile('${file}')">Delete</button>
+            </li>`
         ).join('');
+    }
+
+    // Удаление файла
+    async function deleteFile(fileName) {
+        try {
+            const response = await fetch(`/files/delete/${fileName}`, {
+                method: 'DELETE'
+            });
+            alert(await response.text());
+            await loadFiles();
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
     // Первоначальная загрузка списка

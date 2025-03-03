@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -27,8 +28,13 @@ public class S3Controller {
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            s3Service.uploadFile(file);
-            log.info("File uploaded successfully: {}", file.getOriginalFilename());
+            String originalFileName = file.getOriginalFilename();
+            assert originalFileName != null;
+            String fileExtension = originalFileName.substring(originalFileName.lastIndexOf('.'));
+            String fileName = UUID.randomUUID() + fileExtension;  // Генерация уникального имени файла с сохранением расширения
+
+            s3Service.uploadFile(file, fileName);  // Передача нового имени файла в сервис
+            log.info("File uploaded successfully: {}", fileName);
             return ResponseEntity.ok("File uploaded successfully");
         } catch (IOException e) {
             log.error("Upload failed for file: {}", file.getOriginalFilename(), e);
@@ -42,7 +48,7 @@ public class S3Controller {
             byte[] data = s3Service.downloadFile(fileName);
             log.info("File downloaded successfully: {}", fileName);
 
-            // Кодирование имени файла в UTF-8 и URL encoding
+            // Кодирование имени файла в UTF-8 и URL encoding, с заменой + на %20
             String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
 
             return ResponseEntity.ok()
@@ -53,6 +59,13 @@ public class S3Controller {
             log.error("Download failed for file: {}", fileName, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+    }
+
+    @DeleteMapping("/delete/{fileName}")
+    public ResponseEntity<String> deleteFile(@PathVariable String fileName) {
+        s3Service.deleteFile(fileName);
+        log.info("File deleted successfully: {}", fileName);
+        return ResponseEntity.ok("File deleted successfully");
     }
 
     @GetMapping
